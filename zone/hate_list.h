@@ -39,13 +39,14 @@ public:
 	HateList();
 	~HateList();
 
-	Mob *GetClosestEntOnHateList(Mob *hater);
-	Mob *GetDamageTopOnHateList(Mob *hater);
-	Mob *GetEntWithMostHateOnList(Mob *center);
-	Mob *GetRandomEntOnHateList();
-	Mob* GetEntWithMostHateOnList();
+	Mob *GetClosestEntOnHateList(Mob *hater, bool ignore_mezzed = false);
+	Mob *GetDamageTopOnHateList(Mob *hater, bool ignore_mezzed = false);
+	Mob *GetEntWithMostHateOnList(Mob *center, bool ignore_mezzed = false);
+	Mob *GetRandomEntOnHateList(bool ignore_mezzed = false);
+	Mob* GetEntWithMostHateOnList(bool ignore_mezzed = false);
 
 	bool IsEntOnHateList(Mob *mob);
+	bool IsAwakeEntOnHateList();
 	bool IsHateListEmpty();
 	bool RemoveEntFromHateList(Mob *ent);
 

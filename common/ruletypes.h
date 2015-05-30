@@ -151,6 +151,7 @@ RULE_CATEGORY_END()
 RULE_CATEGORY( Pets )
 RULE_REAL( Pets, AttackCommandRange, 150 )
 RULE_BOOL( Pets, UnTargetableSwarmPet, false )
+RULE_BOOL( Pets, MezzableCombat, true ) // Pets will not break mez of targets on its hate list
 RULE_CATEGORY_END()
 
 RULE_CATEGORY( GM )

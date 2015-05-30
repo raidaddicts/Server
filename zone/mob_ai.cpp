@@ -1071,27 +1071,62 @@ void Mob::AI_Process() {
 		CastToNPC()->CheckSignal();
 	}
 
+	// modify engaged for pets based on rule 'Pets:MezzableCombat'
+	bool pet_mc = IsPet() && RuleB(Pets, MezzableCombat);
+	if (engaged && pet_mc) {
+
+#if EQDEBUG >= 10
+		if (GetOwner() && GetOwner()->IsClient()) {
+			hate_list.PrintHateListToClient(GetOwner()->CastToClient());
+		}
+#endif
+
+		if (target && target->IsMezzed()) {
+			target = nullptr;
+		}
+
+		engaged = hate_list.IsAwakeEntOnHateList();
+
+#if EQDEBUG >= 10
+		if (GetOwner() && GetOwner()->IsClient()) {
+			std::string my_target = "I am";
+			my_target.append(engaged ? " engaged with" : " not engaged with");
+			if (GetTarget()) {
+				my_target.append(" ");
+				my_target.append(GetTarget()->GetName());
+				my_target.append(" as a target");
+			}
+			else {
+				my_target.append(" no target");
+			}
+
+			GetOwner()->CastToClient()->Message(0, "%s", my_target.c_str());
+		}
+#endif
+
+	}
+
 	if (engaged)
 	{
 		if (!(m_PlayerState & static_cast<uint32>(PlayerState::Aggressive)))
 			SendAddPlayerState(PlayerState::Aggressive);
 		// we are prevented from getting here if we are blind and don't have a target in range
 		// from above, so no extra blind checks needed
-		if ((IsRooted() && !GetSpecialAbility(IGNORE_ROOT_AGGRO_RULES)) || IsBlind())
-			SetTarget(hate_list.GetClosestEntOnHateList(this));
-		else
-		{
-			if(AItarget_check_timer->Check())
-			{
+		if ((IsRooted() && !GetSpecialAbility(IGNORE_ROOT_AGGRO_RULES)) || IsBlind()) {
+			SetTarget(hate_list.GetClosestEntOnHateList(this, pet_mc));
+		}
+		else {
+			if(AItarget_check_timer->Check()) {
 				if (IsFocused()) {
 					if (!target) {
-						SetTarget(hate_list.GetEntWithMostHateOnList(this));
+						SetTarget(hate_list.GetEntWithMostHateOnList(this, pet_mc));
 					}
-				} else {
-					if (!ImprovedTaunt())
-						SetTarget(hate_list.GetEntWithMostHateOnList(this));
 				}
-
+				else {
+					if (!ImprovedTaunt()) {
+						SetTarget(hate_list.GetEntWithMostHateOnList(this, pet_mc));
+					}
+				}
 			}
 		}
 

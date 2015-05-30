@@ -2559,10 +2559,19 @@ void Mob::AddToHateList(Mob* other, uint32 hate /*= 0*/, int32 damage /*= 0*/, b
 		}
 	}
 
-	if (mypet && (!(GetAA(aaPetDiscipline) && mypet->IsHeld()))) { // I have a pet, add other to it
-		if(!mypet->IsFamiliar() && !mypet->GetSpecialAbility(IMMUNE_AGGRO))
+	if (mypet) { // I have a pet, add other to it
+		while (true) {
+			if (mypet->IsEngaged() && !RuleB(Pets, MezzableCombat)) { break; }
+			if (GetAA(aaPetDiscipline) && mypet->IsHeld()) { break; }
+			if (mypet->GetSpecialAbility(IMMUNE_AGGRO)) { break; }
+			if (mypet->IsFamiliar()) { break; }
+
 			mypet->hate_list.AddEntToHateList(other, 0, 0, bFrenzy);
-	} else if (myowner) { // I am a pet, add other to owner if it's NPC/LD
+
+			break;
+		}
+	}
+	else if (myowner) { // I am a pet, add other to owner if it's NPC/LD
 		if (myowner->IsAIControlled() && !myowner->GetSpecialAbility(IMMUNE_AGGRO))
 			myowner->hate_list.AddEntToHateList(other, 0, 0, bFrenzy);
 	}
@@ -3535,14 +3544,30 @@ void Mob::CommonDamage(Mob* attacker, int32 &damage, const uint16 spell_id, cons
 		}	//end `if there is some damage being done and theres anattacker person involved`
 
 		Mob *pet = GetPet();
-		if (pet && !pet->IsFamiliar() && !pet->GetSpecialAbility(IMMUNE_AGGRO) && !pet->IsEngaged() && attacker && attacker != this && !attacker->IsCorpse())
-		{
-			if (!pet->IsHeld()) {
+		// criteria is easier to track this way rather than on one line or through indentions...
+		while (pet && attacker) {
+			if (attacker == this) { break; }
+			if (attacker->IsCorpse()) { break; }
+			if (pet->IsEngaged() && !RuleB(Pets, MezzableCombat)) { break; }
+			if (GetAA(aaPetDiscipline) && pet->IsHeld()) { break; }
+			if (pet->GetSpecialAbility(IMMUNE_AGGRO)) { break; }
+			if (pet->IsFamiliar()) { break; }
+
+			if (!pet->GetTarget()) {
 				Log.Out(Logs::Detail, Logs::Aggro, "Sending pet %s into battle due to attack.", pet->GetName());
-				pet->AddToHateList(attacker, 1);
+			}
+			else {
+				Log.Out(Logs::Detail, Logs::Aggro, "Adding agro to pet %s.", pet->GetName());
+			}
+
+			pet->AddToHateList(attacker, 1);
+
+			if (!pet->GetTarget() || (pet->GetTarget() && !(pet->IsFocused() || pet->ImprovedTaunt()))) {
 				pet->SetTarget(attacker);
 				Message_StringID(10, PET_ATTACKING, pet->GetCleanName(), attacker->GetCleanName());
 			}
+
+			break;
 		}
 
 		//see if any runes want to reduce this damage
