@@ -655,14 +655,20 @@ uint32 Client::GetEXPForLevel(uint16 check_level)
 		mod = 2.5;
 	else if (check_level < 60)
 		mod = 2.7;
-	else if (check_level < 61)
-		mod = 3.0;
+	else if (check_level < 70)
+		mod = 2.8;
+	else if (check_level < 80)
+		mod = 2.9;
+	else if (check_level < 90)
+		mod = 3.0;		
+	else if (check_level < 100)
+		mod = 2.0;
 	else
 		mod = 3.1;
 
 	float base = (check_levelm1)*(check_levelm1)*(check_levelm1);
 
-	mod *= 1000;
+	mod *= 200;
 
 	uint32 finalxp = uint32(base * mod);
 	finalxp = mod_client_xp_for_level(finalxp, check_level);

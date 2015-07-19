@@ -8727,9 +8727,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 	if(!strcasecmp( sep->arg[1], "help") && !strcasecmp( sep->arg[2], "\0")){
 		c->Message(0, "List of commands availables for bots:");
 		c->Message(0, "#bot help - show this");
-		c->Message(0, "#bot create [name] [class (id)] [race (id)] [model (male/female)] - create a permanent bot. See #bot help create.");
-		c->Message(0, "#bot help create - show all the race/class id. (make it easier to create bots)");
-		c->Message(0, "#bot delete - completely destroy forever the targeted bot and all its items.");
 		c->Message(0, "#bot list [all/class(1-16)] - list all of your bots or list by class. Classes: 1(WAR), 2(CLR), 3(PAL), 4(RNG), 5(SHD), 6(DRU), 7(MNK), 8(BRD), 9(ROG), 10(SHM), 11(NEC), 12(WIZ), 13(MAG), 14(ENC), 15(BST), 16(BER)");
 		c->Message(0, "#bot spawn [bot name] - spawn a bot from it's name (use list to see all the bots). ");
 		c->Message(0, "#bot inventory list - show the inventory (and the slots IDs) of the targeted bot.");
@@ -8909,105 +8906,6 @@ void Bot::ProcessBotCommands(Client *c, const Seperator *sep) {
 			}
 			else
 				c->Message(15, "You must target a bot you own to do this.");
-		}
-
-		return;
-	}
-
-	if(!strcasecmp(sep->arg[1], "create")) {
-		if(sep->arg[2][0] == '\0' || sep->arg[3][0] == '\0' || sep->arg[4][0] == '\0' || sep->arg[5][0] == '\0' || sep->arg[6][0] != '\0') {
-			c->Message(0, "Usage: #bot create [name] [class(id)] [race(id)] [gender (male/female|0/1)]");
-			return;
-		} else if(strcasecmp(sep->arg[3],"1") && strcasecmp(sep->arg[3],"2") && strcasecmp(sep->arg[3],"3") && strcasecmp(sep->arg[3],"4") && strcasecmp(sep->arg[3],"5") && strcasecmp(sep->arg[3],"6") && strcasecmp(sep->arg[3],"7") && strcasecmp(sep->arg[3],"8") && strcasecmp(sep->arg[3],"9") && strcasecmp(sep->arg[3],"10") && strcasecmp(sep->arg[3],"11") && strcasecmp(sep->arg[3],"12") && strcasecmp(sep->arg[3],"13") && strcasecmp(sep->arg[3],"14") && strcasecmp(sep->arg[3],"15") && strcasecmp(sep->arg[3],"16")) {
-			c->Message(0, "Usage: #bot create [name] [class(id)] [race(id)] [gender (male/female|0/1)]");
-			return;
-		} else if(strcasecmp(sep->arg[4],"1") && strcasecmp(sep->arg[4],"2") && strcasecmp(sep->arg[4],"3") && strcasecmp(sep->arg[4],"4") && strcasecmp(sep->arg[4],"5") && strcasecmp(sep->arg[4],"6") && strcasecmp(sep->arg[4],"7") && strcasecmp(sep->arg[4],"8") && strcasecmp(sep->arg[4],"9") && strcasecmp(sep->arg[4],"10") && strcasecmp(sep->arg[4],"11") && strcasecmp(sep->arg[4],"12") && strcasecmp(sep->arg[4],"330") && strcasecmp(sep->arg[4],"128") && strcasecmp(sep->arg[4],"130") && strcasecmp(sep->arg[4],"522")) {
-			c->Message(0, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330,522)] [gender (male/female|0/1)]");
-			return;
-		} else if(strcasecmp(sep->arg[5],"male") && strcasecmp(sep->arg[5],"0") && strcasecmp(sep->arg[5],"female") && strcasecmp(sep->arg[5],"1")) {
-			c->Message(0, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330,522)] [gender (male/female|0/1)]");
-			return;
-		}
-
-		uint32 MaxBotCreate = RuleI(Bots, CreateBotCount);
-		if(CreatedBotCount(c->CharacterID(), &TempErrorMessage) >= MaxBotCreate) {
-			c->Message(0, "You cannot create more than %i bots.", MaxBotCreate);
-			return;
-		}
-
-		if(!TempErrorMessage.empty()) {
-			c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
-			return;
-		}
-
-		int gender = 0;
-		if(!strcasecmp(sep->arg[5], "female") || !strcasecmp(sep->arg[5], "1"))
-			gender = 1;
-
-		if(!IsBotNameAvailable(sep->arg[2],&TempErrorMessage)) {
-			c->Message(0, "The name %s is already being used or is invalid. Please choose a different name.", sep->arg[2]);
-			return;
-		}
-
-		NPCType DefaultNPCTypeStruct = CreateDefaultNPCTypeStructForBot(std::string(sep->arg[2]), std::string(), c->GetLevel(), atoi(sep->arg[4]), atoi(sep->arg[3]), gender);
-		Bot* NewBot = new Bot(DefaultNPCTypeStruct, c);
-
-		if(NewBot) {
-			if(!NewBot->IsValidRaceClassCombo()) {
-				c->Message(0, "That Race/Class combination cannot be created.");
-				return;
-			}
-
-			if(!NewBot->IsValidName()) {
-				c->Message(0, "%s has invalid characters. You can use only the A-Z, a-z and _ characters in a bot name.", NewBot->GetCleanName());
-				return;
-			}
-
-			if(!TempErrorMessage.empty()) {
-				c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
-				return;
-			}
-
-			if(!NewBot->Save())
-				c->Message(0, "Unable to save %s as a bot.", NewBot->GetCleanName());
-			else
-				c->Message(0, "%s saved as bot %u.", NewBot->GetCleanName(), NewBot->GetBotID());
-		}
-		else
-			Log.Out(Logs::General, Logs::Error, "Error in #bot create, cannot find NewBot");
-		return;
-	}
-
-	if(!strcasecmp(sep->arg[1], "help") && !strcasecmp(sep->arg[2], "create") ){
-		c->Message(0, "Classes: 1(WAR), 2(CLR), 3(PAL), 4(RNG), 5(SHD), 6(DRU), 7(MNK), 8(BRD), 9(ROG), 10(SHM), 11(NEC), 12(WIZ), 13(MAG), 14(ENC), 15(BST), 16(BER)");
-		c->Message(0, "------------------------------------------------------------------");
-		c->Message(0, "Races: 1(Human), 2(Barbarian), 3(Erudite), 4(Wood Elf), 5(High Elf), 6(Dark Elf), 7(Half Elf), 8(Dwarf), 9(Troll), 10(Ogre), 11(Halfling), 12(Gnome), 128(Iksar), 130(Vah Shir), 330(Froglok), 522(Drakkin)");
-		c->Message(0, "------------------------------------------------------------------");
-		c->Message(0, "Usage: #bot create [name] [class(1-16)] [race(1-12,128,130,330,522)] [gender(male/female)]");
-		c->Message(0, "Example: #bot create Sneaky 9 6 male");
-		return;
-	}
-
-	if(!strcasecmp(sep->arg[1], "delete") ) {
-		if((c->GetTarget() == nullptr) || !c->GetTarget()->IsBot()) {
-			c->Message(15, "You must target a bot!");
-			return;
-		} else if(c->GetTarget()->CastToBot()->GetBotOwnerCharacterID() != c->CharacterID()) {
-			c->Message(15, "You can't delete a bot that you don't own.");
-			return;
-		}
-
-		if(c->GetTarget()->IsBot()) {
-			Bot* BotTargeted = c->GetTarget()->CastToBot();
-			if(BotTargeted) {
-				BotTargeted->DeleteBot(&TempErrorMessage);
-				if(!TempErrorMessage.empty()) {
-					c->Message(13, "Database Error: %s", TempErrorMessage.c_str());
-					return;
-				}
-
-				BotTargeted->Camp(false);
-			}
 		}
 
 		return;

@@ -1109,11 +1109,13 @@ int32 Client::GetACMit()
 
 int32 Client::GetACAvoid()
 {
-	int32 avoidance = (acmod() + ((GetSkill(SkillDefense) + itembonuses.HeroicAGI / 10) * 16) / 9);
-	if (avoidance < 0) {
+	int32 avoidance = ((acmod() + ((GetSkill(SkillDefense) + itembonuses.HeroicAGI / 10) * 16) / 9) * 1000 / 847);
+	if (avoidance < 0)
 		avoidance = 0;
-	}
-	return (avoidance * 1000 / 847);
+	else if (avoidance > RuleI(Combat, AvoidanceCap))
+		avoidance = RuleI(Combat, AvoidanceCap);
+	
+	return avoidance;
 }
 
 int32 Client::CalcMaxMana()

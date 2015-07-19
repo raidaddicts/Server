@@ -116,6 +116,9 @@ RULE_INT(Character, TradeskillUpResearch, 1) // Research skillup rate adjust. Lo
 RULE_INT(Character, TradeskillUpTinkering, 2) // Tinkering skillup rate adjust. Lower is faster.
 RULE_BOOL(Character, SpamHPUpdates, false) // if your server has stupid amounts of HP that causes client display issues, turn this on!
 RULE_BOOL(Character, MarqueeHPUpdates, false) // Will show Health % in center of screen < 100%
+RULE_REAL(Character, PetPowerActPower, 50.0f)
+RULE_INT(Character, PetPowerMinDmg, 2)
+RULE_INT(Character, PetPowerMaxDmg, 20)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY(Mercs)
@@ -449,6 +452,7 @@ RULE_BOOL(Combat, ProjectileDmgOnImpact, true) //If enabled, projectiles (ie arr
 RULE_BOOL(Combat, MeleePush, true) // enable melee push
 RULE_INT(Combat, MeleePushChance, 50) // (NPCs) chance the target will be pushed. Made up, 100 actually isn't that bad
 RULE_BOOL(Combat, UseLiveCombatRounds, true) // turn this false if you don't want to worry about fixing up combat rounds for NPCs
+RULE_INT(Combat, AvoidanceCap, 750)
 RULE_CATEGORY_END()
 
 RULE_CATEGORY(NPC)
